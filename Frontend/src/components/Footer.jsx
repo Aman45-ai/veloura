@@ -1,5 +1,4 @@
-import React from 'react'
-import { Facebook, Instagram } from 'lucide-react'
+
 
 const Footer = () => {
   return (
@@ -38,16 +37,6 @@ const Footer = () => {
         </div>
 
         <div className='flex items-center gap-5'>
-          <Instagram
-            size={19}
-            className='cursor-pointer hover:text-[#dea869] transition-colors duration-300'
-          />
-
-          <Facebook
-            size={19}
-            className='cursor-pointer hover:text-[#dea869] transition-colors duration-300'
-          />
-
           <div className='h-8 w-px bg-[#B8A175]/40'></div>
 
           <div className='text-xs leading-5'>
