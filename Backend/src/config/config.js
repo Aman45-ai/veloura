@@ -4,7 +4,8 @@ configDotenv()
 
 const config = {
     MONGO_URI:process.env.MONGO_URI,
-    JWT_SECRET:process.env.JWT_SECRET
+    ACCESS_JWT_SECRET:process.env.ACCESS_SECRET,
+    REFRESH_JWT_SECRET:process.env.REFRESH_SECRET
 }
 
 export default config

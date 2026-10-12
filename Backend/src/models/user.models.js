@@ -15,6 +15,14 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: [true, "Name is required"],
         minlength: [3, "Name must be of atleast 3 characters."]
+    },
+    refreshToken:{
+        type: String,
+    },
+    role:{
+        type: String,
+        default: "user",
+        enum: ["user","admin"]
     }
 })
 
