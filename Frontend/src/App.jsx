@@ -1,12 +1,18 @@
 
-import LandingPage from './components/landingpage/LandingPage'
+import AuthProvider from './context/AuthProvider'
 import AppRoutes from './routes/AppRoutes'
+import { Toaster } from 'sonner'
 
 const App = () => {
   return (
-    <div>
+    <AuthProvider>
+      <Toaster
+                position="top-right"
+                richColors
+                theme="dark"
+            />
       <AppRoutes />
-    </div>
+    </AuthProvider>
   )
 }
 

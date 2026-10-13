@@ -7,16 +7,37 @@ import Reservation from '../components/reservations/Reservation'
 import Menu from '../components/menu/Menu'
 import Login from '../components/auth/Login'
 import Signup from '../components/auth/Signup'
+import ProtectedRoutes from './ProtectedRoutes'
 
 const AppRoutes = () => {
   return (
     <div>
       <Routes>
-        <Route path='/' element={<LandingPage />} />
-        <Route path='/gallery' element={<Gallery />} />
-        <Route path='/contact' element={<Contact />} />
-        <Route path='/reservations' element={<Reservation />} />
-        <Route path='/menu' element={<Menu />} />
+        <Route path='/' element={
+          <ProtectedRoutes>
+            <LandingPage />
+          </ProtectedRoutes>
+        } />
+        <Route path='/gallery' element={
+          <ProtectedRoutes>
+            <Gallery />
+          </ProtectedRoutes>
+        } />
+        <Route path='/contact' element={
+          <ProtectedRoutes>
+            <Contact />
+          </ProtectedRoutes>
+        } />
+        <Route path='/reservations' element={
+          <ProtectedRoutes>
+            <Reservation />
+          </ProtectedRoutes>
+        } />
+        <Route path='/menu' element={
+          <ProtectedRoutes>
+            <Menu />
+          </ProtectedRoutes>
+        } />
         <Route path='/login' element={<Login />} />
         <Route path='/sign-up' element={<Signup />} />
       </Routes>

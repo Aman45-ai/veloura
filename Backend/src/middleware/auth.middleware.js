@@ -14,7 +14,7 @@ const authMiddleware = (req, res, next) => {
     }
 
     try{
-        const verification = jwt.verify(token, config.JWT_SECRET)
+        const verification = jwt.verify(token, config.ACCESS_JWT_SECRET)
         req.userId = verification.userId
         next()
     } catch (error) {

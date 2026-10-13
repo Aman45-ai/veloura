@@ -1,27 +1,25 @@
 import { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff, ArrowRight, User, UtensilsCrossed, Leaf, Users, Check } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, User, UtensilsCrossed, Leaf, Users } from 'lucide-react';
 import auth from '../../assets/auth.png';
 import { useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
+import authApi from '../../services/auth.service'
 
 const Signup = () => {
-    const navigate = useNavigate()
-  const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState({ fullName: '', email: '', password: '' });
+  const { register, handleSubmit, formState: { errors } } = useForm()
+  const navigate = useNavigate()
+  const [showPassword, setShowPassword] = useState(false)
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log(formData);
-  };
-
-  const passwordChecks = [
-    { label: 'At least 8 characters', valid: formData.password.length >= 8 },
-    { label: 'Include a number', valid: /\d/.test(formData.password) },
-    { label: 'Include a special character', valid: /[!@#$%^&*(),.?":{}|<>]/.test(formData.password) },
-  ];
+  const onSubmit = async(data) => {
+    try{
+      const response = await authApi.signupApi(data)
+      toast.success(response.data.message)
+      navigate('/login')
+    }catch(error){
+            toast.error(error.response?.data?.message || error.response?.data || "Something went wrong!")
+        }
+  }
 
   return (
     <div
@@ -80,7 +78,7 @@ const Signup = () => {
       <div className="relative w-full max-w-md bg-[#0d0c0a]/70 backdrop-blur-xl border border-[#d4a349]/30 rounded-3xl p-10 shadow-2xl overflow-hidden">
         <div className="flex items-center justify-end gap-3 mb-8">
           <span className="text-neutral-300 text-sm">Already have an account?</span>
-          <button className="flex items-center gap-1 text-sm text-[#d4a349] border border-[#d4a349]/60 rounded-full px-4 py-1.5 hover:bg-[#d4a349]/10 transition cursor-pointer" onClick={()=>{
+          <button className="flex items-center gap-1 text-sm text-[#d4a349] border border-[#d4a349]/60 rounded-full px-4 py-1.5 hover:bg-[#d4a349]/10 transition cursor-pointer" onClick={() => {
             navigate('/login')
           }}>
             Log In <ArrowRight size={14} />
@@ -92,7 +90,7 @@ const Signup = () => {
           Join Veloura and start your culinary journey today.
         </p>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           <div>
             <label className="text-sm text-neutral-300 mb-1 block">
               Full Name
@@ -103,12 +101,21 @@ const Signup = () => {
                 type="text"
                 name="fullName"
                 placeholder="Enter your full name"
-                value={formData.fullName}
-                onChange={handleChange}
                 className="bg-transparent outline-none w-full text-white placeholder:text-neutral-500"
+                {...register("name", {
+                  required: {
+                    value: true,
+                    message: "Name is required!"
+                  },
+                  minLength: {
+                    value: 3,
+                    message: "Name must be of atleast 3 characters!"
+                  }
+                })}
               />
             </div>
           </div>
+          {errors.name && <p className='text-red-500 font-semibold'>{errors.name.message}</p>}
 
           <div>
             <label className="text-sm text-neutral-300 mb-1 block">
@@ -120,13 +127,22 @@ const Signup = () => {
                 type="email"
                 name="email"
                 placeholder="yourname@example.com"
-                value={formData.email}
-                onChange={handleChange}
                 className="bg-transparent outline-none w-full text-white placeholder:text-neutral-500"
+                {...register("email", {
+                  required: {
+                    value: true,
+                    message: "Email is required!"
+                  },
+                  pattern: {
+                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                    message: "Please enter a valid email address!",
+                  }
+                })}
               />
             </div>
           </div>
 
+          {errors.email && <p className='text-red-500 font-semibold'>{errors.email.message}</p>}
           <div>
             <label className="text-sm text-neutral-300 mb-1 block">
               Password
@@ -137,9 +153,17 @@ const Signup = () => {
                 type={showPassword ? 'text' : 'password'}
                 name="password"
                 placeholder="Create a password"
-                value={formData.password}
-                onChange={handleChange}
                 className="bg-transparent outline-none w-full text-white placeholder:text-neutral-500"
+                {...register("password", {
+                  required: {
+                    value: true,
+                    message: "Password is required!"
+                  },
+                  pattern: {
+                    value: /^(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/,
+                    message: "Password must be at least 8 characters long and include a number and special character."
+                  }
+                })}
               />
               <button
                 type="button"
@@ -149,30 +173,8 @@ const Signup = () => {
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
-
-            <div className="mt-3 space-y-1.5">
-              {passwordChecks.map(({ label, valid }) => (
-                <div key={label} className="flex items-center gap-2">
-                  <span
-                    className={`w-4 h-4 rounded-full border flex items-center justify-center transition ${
-                      valid
-                        ? 'bg-[#d4a349] border-[#d4a349]'
-                        : 'border-neutral-600'
-                    }`}
-                  >
-                    {valid && <Check size={10} className="text-black" />}
-                  </span>
-                  <span
-                    className={`text-xs transition ${
-                      valid ? 'text-neutral-300' : 'text-neutral-500'
-                    }`}
-                  >
-                    {label}
-                  </span>
-                </div>
-              ))}
-            </div>
           </div>
+           {errors.password && <p className='text-red-500 font-semibold'>{errors.password.message}</p>}
 
           <button
             type="submit"

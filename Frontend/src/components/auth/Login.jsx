@@ -1,21 +1,32 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, UtensilsCrossed, Leaf, Users } from 'lucide-react';
 import auth from '../../assets/auth.png';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'
+import { useForm } from 'react-hook-form'
+import authApi from '../../services/auth.service'
+import { toast } from 'sonner'
+import AuthContext from '../../context/AuthContext';
 
 const Login = () => {
+    const {register, handleSubmit, formState:{ errors }, reset} = useForm()
     const navigate = useNavigate()
-    const [showPassword, setShowPassword] = useState(false);
-    const [formData, setFormData] = useState({ email: '', password: '' });
+    const [showPassword, setShowPassword] = useState(false)
+    const { setAccessToken } = useContext(AuthContext)
 
-    const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        console.log(formData);
-    };
+    const onSubmit = async(data) => {
+        try{
+            const response = await authApi.loginApi(data)
+            toast.success(response.data.message)
+            const token = response.data.accessToken
+            setAccessToken(token)
+            localStorage.setItem("accessToken", token)
+            reset()
+            navigate('/')
+        }catch(error){
+            console.log(error)
+            toast.error(error.response?.data?.message || error.response?.data || "Something went wrong!")
+        }
+    }
 
     return (
         <div
@@ -87,7 +98,7 @@ const Login = () => {
                     Log in to continue your culinary journey with Veloura.
                 </p>
 
-                <form onSubmit={handleSubmit} className="space-y-5">
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                     <div>
                         <label className="text-sm text-neutral-300 mb-1 block">
                             Email Address
@@ -96,14 +107,22 @@ const Login = () => {
                             <Mail size={18} className="text-neutral-400" />
                             <input
                                 type="email"
-                                name="email"
                                 placeholder="yourname@example.com"
-                                value={formData.email}
-                                onChange={handleChange}
                                 className="bg-transparent outline-none w-full text-white placeholder:text-neutral-500"
+                                {...register("email",{
+                                    required: {
+                                        value:true,
+                                        message: "Email is required!"
+                                    },
+                                    pattern: {
+                                        value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                                        message: "Please enter a valid email address!"
+                                    }
+                                })}
                             />
                         </div>
                     </div>
+                    {errors.email && <p className='text-red-500 font-semibold'>{errors.email.message}</p>}
 
                     <div>
                         <label className="text-sm text-neutral-300 mb-1 block">
@@ -115,9 +134,13 @@ const Login = () => {
                                 type={showPassword ? 'text' : 'password'}
                                 name="password"
                                 placeholder="Enter your password"
-                                value={formData.password}
-                                onChange={handleChange}
                                 className="bg-transparent outline-none w-full text-white placeholder:text-neutral-500"
+                                {...register("password",{
+                                    required: {
+                                        value:true,
+                                        message: "Password is required!"
+                                    }
+                                })}
                             />
                             <button
                                 type="button"
@@ -128,10 +151,10 @@ const Login = () => {
                             </button>
                         </div>
                     </div>
-
+                    {errors.password && <p className='text-red-500 font-semibold'>{errors.password.message}</p>}
                     <button
                         type="submit"
-                        className="w-full py-3 rounded-full bg-linear-to-r from-[#e8bd6d] to-[#b9812f] text-black font-medium flex items-center justify-center gap-2 hover:opacity-90 transition"
+                        className="w-full py-3 rounded-full bg-linear-to-r from-[#e8bd6d] to-[#b9812f] text-black font-medium flex items-center justify-center gap-2 hover:opacity-90 transition cursor-pointer"
                     >
                         Log In <ArrowRight size={16} />
                     </button>
