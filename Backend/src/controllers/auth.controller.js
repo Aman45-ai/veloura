@@ -136,4 +136,32 @@ const newToken = async (req, res) => {
         res.status(401).send("Client/Authentication failure")
     }
 }
-export default { signup, login, newToken }
+
+
+const logout = async (req, res) => {
+    try {
+        const user = await User.findById(req.userId);
+
+        if (!user) {
+            return res.status(404).send("User not found");
+        }
+
+        user.refreshToken = null;
+        await user.save();
+
+        res.clearCookie("refreshToken", {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict"
+        });
+
+        return res.status(200).send({
+            message: "Logout successful"
+        });
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send("Internal Server Error");
+    }
+};
+export default { signup, login, newToken, logout }

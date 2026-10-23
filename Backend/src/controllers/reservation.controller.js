@@ -48,6 +48,7 @@ const createReservation = async (req, res) => {
             message: "Request received successfully"
         })
     } catch (error) {
+        console.log(error)
         res.status(500).send({
             message: "Internal Server Error"
         })
@@ -59,13 +60,13 @@ const getReservationsForManager = async (req, res) => {
 
         const manager = await User.findById(req.userId)
 
-        if (manager!==null && manager.role === "manager") {
+        if (manager !== null && manager.role === "manager") {
             const allReservations = await reservation.find()
             res.status(200).send({
                 allReservations,
                 message: "Reservations fetched successfully"
             })
-        }else{
+        } else {
             res.status(403).send("Unauthorised Access")
         }
 
@@ -75,41 +76,104 @@ const getReservationsForManager = async (req, res) => {
 }
 
 const updateReservationStatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+
+        const manager = await User.findById(req.userId);
+
+        if (!manager || manager.role !== "manager") {
+            return res.status(403).send("Unauthorized Access");
+        }
+
+        if (!["confirmed", "rejected"].includes(status)) {
+            return res.status(400).send("Invalid reservation status");
+        }
+
+        const checkReservation = await reservation.findById(id);
+
+        if (!checkReservation) {
+            return res.status(404).send("Reservation not found");
+        }
+
+        const updatedReservation = await reservation.findByIdAndUpdate(
+            id,
+            { status: status },
+            { new: true, runValidators: true }
+        );
+
+        return res.status(200).send({
+            message: "Reservation status updated successfully",
+            reservation: updatedReservation
+        });
+
+    } catch (error) {
+        console.log(error)
+        return res.status(500).send("Internal Server Error");
+    }
+}
+
+const getReservationForUser = async (req, res) => {
+    try {
+        const reservations = await reservation.find({ user: req.userId })
+
+        res.status(200).send({
+            reservations,
+            message: "Reservations fetched successfully"
+        })
+
+    } catch (error) {
+        console.log(error)
+        res.status(500).send("Internal Server Error")
+    }
+}
+
+
+const cancelReservation = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status } = req.body;
 
-    const manager = await User.findById(req.userId);
+    const reservationToCancel = await reservation.findOne({
+      _id: id,
+      user: req.userId
+    });
 
-    if (!manager || manager.role !== "manager") {
-      return res.status(403).send("Unauthorized Access");
-    }
-
-    if (!["confirmed", "rejected"].includes(status)) {
-      return res.status(400).send("Invalid reservation status");
-    }
-
-    const checkReservation = await reservation.findById(id);
-
-    if (!checkReservation) {
+    if (!reservationToCancel) {
       return res.status(404).send("Reservation not found");
     }
 
-    const updatedReservation = await reservation.findByIdAndUpdate(
-      id,
-      {status: status},
-      { new: true, runValidators: true }
+    if (reservationToCancel.status !== "pending") {
+      return res.status(409).send("Cancellation not allowed");
+    }
+
+    const updatedReservation = await reservation.findOneAndUpdate(
+      {
+        _id: id,
+        user: req.userId,
+        status: "pending"
+      },
+      {
+        $set: { status: "cancelled" }
+      },
+      {
+        new: true,
+        runValidators: true
+      }
     );
 
+    if (!updatedReservation) {
+      return res.status(409).send("Reservation status changed. Please try again");
+    }
+
     return res.status(200).send({
-      message: "Reservation status updated successfully",
-      reservation: updatedReservation
+      reservation: updatedReservation,
+      message: "Reservation cancelled successfully"
     });
 
   } catch (error) {
-    console.log(error)
+    console.log(error);
     return res.status(500).send("Internal Server Error");
   }
 }
 
-export default { createReservation, getReservationsForManager, updateReservationStatus }
+export default { createReservation, getReservationsForManager, updateReservationStatus, getReservationForUser, cancelReservation }
