@@ -8,21 +8,27 @@ import { toast } from 'sonner'
 import AuthContext from '../../context/AuthContext';
 
 const Login = () => {
-    const {register, handleSubmit, formState:{ errors }, reset} = useForm()
+    const { register, handleSubmit, formState: { errors }, reset } = useForm()
     const navigate = useNavigate()
     const [showPassword, setShowPassword] = useState(false)
-    const { setAccessToken } = useContext(AuthContext)
+    const { login } = useContext(AuthContext)
 
-    const onSubmit = async(data) => {
-        try{
+    const onSubmit = async (data) => {
+        try {
             const response = await authApi.loginApi(data)
             toast.success(response.data.message)
             const token = response.data.accessToken
-            setAccessToken(token)
-            localStorage.setItem("accessToken", token)
+            const role = response.data.role
+            login(token, role)
             reset()
-            navigate('/')
-        }catch(error){
+            if (role === 'admin') {
+                navigate('/admin')
+            } else if (role === 'manager') {
+                navigate('/manager')
+            } else {
+                navigate('/')
+            }
+        } catch (error) {
             console.log(error)
             toast.error(error.response?.data?.message || error.response?.data || "Something went wrong!")
         }
@@ -86,7 +92,7 @@ const Login = () => {
             <div className="relative w-full max-w-md bg-[#0d0c0a]/70 backdrop-blur-xl border border-[#d4a349]/30 rounded-3xl p-10 shadow-2xl overflow-hidden">
                 <div className="flex items-center justify-end gap-3 mb-8">
                     <span className="text-neutral-300 text-sm">New here?</span>
-                    <button className="flex items-center gap-1 text-sm text-[#d4a349] border border-[#d4a349]/60 rounded-full px-4 py-1.5 hover:bg-[#d4a349]/10 transition cursor-pointer" onClick={()=>{
+                    <button className="flex items-center gap-1 text-sm text-[#d4a349] border border-[#d4a349]/60 rounded-full px-4 py-1.5 hover:bg-[#d4a349]/10 transition cursor-pointer" onClick={() => {
                         navigate('/sign-up')
                     }}>
                         Create account <ArrowRight size={14} />
@@ -109,9 +115,9 @@ const Login = () => {
                                 type="email"
                                 placeholder="yourname@example.com"
                                 className="bg-transparent outline-none w-full text-white placeholder:text-neutral-500"
-                                {...register("email",{
+                                {...register("email", {
                                     required: {
-                                        value:true,
+                                        value: true,
                                         message: "Email is required!"
                                     },
                                     pattern: {
@@ -135,9 +141,9 @@ const Login = () => {
                                 name="password"
                                 placeholder="Enter your password"
                                 className="bg-transparent outline-none w-full text-white placeholder:text-neutral-500"
-                                {...register("password",{
+                                {...register("password", {
                                     required: {
-                                        value:true,
+                                        value: true,
                                         message: "Password is required!"
                                     }
                                 })}

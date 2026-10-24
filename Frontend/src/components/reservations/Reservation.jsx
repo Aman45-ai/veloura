@@ -4,8 +4,10 @@ import reservation from '../../assets/reservation.png'
 import ReservationForm from './ReservationForm'
 import ReservationHero from './ReservationHero'
 import ReservationHistory from './ReservationHistory'
+import { useState } from 'react'
 
 const Reservation = () => {
+  const [refresh, setRefresh] = useState(false)
   return (
     <div className=' bg-[#050404]'>
       <div className='max-w-[1600px] mx-auto'>
@@ -21,10 +23,10 @@ const Reservation = () => {
           <ReservationHero />
         </div>
         <div className='border border-b-[#6c450a]'>
-          <ReservationForm />
+          <ReservationForm setRefresh={setRefresh}/>
         </div>
         <div className='border border-b-[#6c450a]'>
-          <ReservationHistory />
+          <ReservationHistory refresh={refresh}/>
         </div>
         <div className='border border-b-[#6c450a]'>
           <Footer />

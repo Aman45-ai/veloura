@@ -95,6 +95,7 @@ const login = async (req, res) => {
             res.status(200).send({
                 message: "Login Successfull",
                 accessToken,
+                role:emailMatch.role
 
             })
         } else {
@@ -110,7 +111,7 @@ const login = async (req, res) => {
 
 const newToken = async (req, res) => {
     const refreshToken = req.cookies.refreshToken
-    if(refreshToken === null){
+    if(!refreshToken){
         return res.status(400).send({
             message:"Client/Authentication failure"
         })
@@ -118,15 +119,15 @@ const newToken = async (req, res) => {
     try {
         const verification = jwt.verify(refreshToken, config.REFRESH_JWT_SECRET)
         const dbUser = await User.findById(verification.userId)
-        if (dbUser === null || dbUser.refreshToken === null) {
+        if (dbUser === null || dbUser.refreshToken === null || dbUser.refreshToken === undefined) {
             return res.status(401).send({
                 message:"Client/Authentication failure"
             })
         } else if (refreshToken === dbUser.refreshToken) {
-            const generateAccessToken = jwt.sign({ userId: verification.userId }, config.ACCESS_JWT_SECRET, { expiresIn: '2h' })
+            const newAccessToken = jwt.sign({ userId: verification.userId }, config.ACCESS_JWT_SECRET, { expiresIn: '2h' })
             res.status(200).send({
                 message: "New Access Token generated",
-                accessToken: generateAccessToken
+                accessToken: newAccessToken
             })
         } else {
             res.status(401).send("Client/Authentication failure")
@@ -151,8 +152,8 @@ const logout = async (req, res) => {
 
         res.clearCookie("refreshToken", {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "strict"
+            secure: false,
+            sameSite: "lax"
         });
 
         return res.status(200).send({

@@ -4,4 +4,8 @@ const reservationApi = (data) => {
     return api.post('/reservation',data)
 }
 
-export default reservationApi
+const getUserReservationApi = () => {
+    return api.get('/user-reservations')
+}
+
+export default { reservationApi, getUserReservationApi}

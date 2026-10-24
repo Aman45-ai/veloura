@@ -4,16 +4,20 @@ import config from '../config/config.js'
 const authMiddleware = (req, res, next) => {
     const authorization = req.header('Authorization')
 
-    let token 
+    let token
 
-    if(authorization){
+    if (authorization) {
         const parts = authorization.split(" ")
-        token = parts[1]
-    }else{
+        if (parts.length === 2 && parts[0] === "Bearer" && parts[1]) {
+            token = parts[1]
+        } else {
+            return res.status(401).send("Authorisation Unavailable")
+        }
+    } else {
         return res.status(401).send("Authorisation Unavailable")
     }
 
-    try{
+    try {
         const verification = jwt.verify(token, config.ACCESS_JWT_SECRET)
         req.userId = verification.userId
         next()

@@ -1,7 +1,7 @@
 import { CalendarDays, Clock, Mail, Phone, Tag, UserRound, UsersRound } from 'lucide-react'
 import reservation1 from '../../assets/reservation1.png'
 import { useForm } from 'react-hook-form'
-import reservationApi from '../../services/reservation.service'
+import reservation from '../../services/reservation.service'
 import { toast } from 'sonner'
 import { useContext } from 'react'
 import AuthContext from '../../context/AuthContext'
@@ -13,7 +13,7 @@ const getLocalDate = (date) => {
     return `${year}-${month}-${day}`
 }
 
-const ReservationForm = () => {
+const ReservationForm = ({setRefresh}) => {
     const { register, handleSubmit, formState: { errors }, reset } = useForm()
     const { isLoggedIn, accessToken } = useContext(AuthContext)
 
@@ -27,7 +27,8 @@ const ReservationForm = () => {
             return
         }
         try {
-            const response = await reservationApi(data)
+            const response = await reservation.reservationApi(data)
+            setRefresh(prev => !prev)
             toast.success(response.data.message)
         } catch (error) {
             toast.error(error.response?.data?.message || error.response?.data || "Something went wrong!")
@@ -35,6 +36,7 @@ const ReservationForm = () => {
 
         reset()
     }
+
 
     return (
         <div className='px-15 py-5 bg-[#0b0501]'>

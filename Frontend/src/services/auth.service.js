@@ -8,4 +8,8 @@ const loginApi = (data) => {
     return api.post('/auth/login',data)
 }
 
-export default { signupApi, loginApi }
+const logoutApi = () => {
+    return api.post('/auth/logout')
+}
+
+export default { signupApi, loginApi, logoutApi }
